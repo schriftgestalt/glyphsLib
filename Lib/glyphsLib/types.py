@@ -114,6 +114,43 @@ class point(object):
         if self.rect:
             self.rect.value[1] = value
 
+class intlist(object):
+    default = []
+    def __init__(self, value=None):
+        if value is not None:
+            value = value.replace('"', '')
+            value = value.strip('{}')
+            self.value = [int(i) for i in value.split(",")]
+        else:
+            self.value = self.default
+
+    def __repr__(self):
+        return '<intlist {%s}>' % (", ".join(self.value))
+
+    def plistValue(self):
+        assert (isinstance(self.value, list))
+        if self.value is not self.default:
+            return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
+
+    def __getitem__(self, key):
+        if type(key) is int and key < len(self.value):
+            if key < len(self.value):
+                return self.value[key]
+            else:
+                return 0
+        else:
+            raise IndexError
+
+    def __setitem__(self, key, value):
+        if type(key) is int:
+            while key > len(self.value):
+                self.value.append(0)
+            self.value[key] = value
+        else:
+            raise IndexError
+
+    def __len__(self):
+        return len(self.value)
 
 class size(point):
     def __repr__(self):

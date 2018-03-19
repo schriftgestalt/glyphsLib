@@ -25,7 +25,7 @@ import uuid
 import logging
 import glyphsLib
 from glyphsLib.types import (
-    transform, point, rect, size, glyphs_datetime, color, floatToString,
+    transform, point, intlist, rect, size, glyphs_datetime, color, floatToString,
     readIntlist, writeIntlist, baseType)
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer, escape_string
@@ -152,7 +152,7 @@ def hint_target(line=None):
     if line is None:
         return None
     if line[0] == "{":
-        return point(line)
+        return intlist(line)
     else:
         return line
 
