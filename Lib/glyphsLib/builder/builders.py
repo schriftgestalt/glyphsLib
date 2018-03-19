@@ -124,8 +124,16 @@ class UFOBuilder(_LoggerMixin):
         else:
             glyph_order = []
         sorted_glyphset = set(glyph_order)
-
+        
+        notExportedGlyphs = set()
+        
         for glyph in self.font.glyphs:
+            if not glyph.export:
+                # print("__dont export glyph", glyph)
+                notExportedGlyphs.add(glyph.name)
+        for glyph in self.font.glyphs:
+            if not glyph.export:
+                continue
             self.to_ufo_glyph_groups(kerning_groups, glyph)
             glyph_name = glyph.name
             if glyph_name not in sorted_glyphset:
@@ -135,6 +143,25 @@ class UFOBuilder(_LoggerMixin):
                 glyph_order.append(glyph_name)
 
             for layer in glyph.layers.values():
+                
+                for component in list(layer.components):
+                    if component.componentName in notExportedGlyphs:
+                        # print("__decomposing", component)
+                        
+                        # import cProfile, pstats, io
+                        # pr = cProfile.Profile()
+                        # pr.enable()
+                        print("__component", component)
+                        component.decompose()
+                        
+                        # pr.disable()
+                        # s = io.StringIO()
+                        # sortby = 'cumulative'
+                        # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+                        # ps.print_stats()
+                        # print("__profile", s.getvalue())
+
+                
                 layer_id = layer.layerId
                 layer_name = layer.name
 
@@ -207,7 +234,7 @@ class UFOBuilder(_LoggerMixin):
 
     @property
     def instance_data(self):
-        instances = self.font.instances
+        instances = [instance for instance in self.font.instances if instance.exports]
         if self._do_filter_instances_by_family:
             instances = list(
                 filter_instances_by_family(instances,

@@ -19,15 +19,10 @@ from collections import deque
 
 
 def to_ufo_names(self, ufo, master, family_name):
-    width = master.width
-    weight = master.weight
-    custom = master.customName
     is_italic = bool(master.italicAngle)
 
     styleName = build_style_name(
-        width if width != 'Regular' else '',
-        weight if weight != 'Regular' else '',
-        custom,
+        master.name,
         is_italic
     )
     styleMapFamilyName, styleMapStyleName = build_stylemap_names(

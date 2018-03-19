@@ -132,9 +132,8 @@ def to_ufo_glyph_libdata(self, glyph, layer):
     self.to_ufo_guidelines(glyph, layer)
     self.to_ufo_glyph_background(glyph, layer.background)
     for key in ['annotations', 'hints']:
-        try:
-            value = getattr(layer, key)
-        except KeyError:
+        value = getattr(layer, key)
+        if value is None or value.values() is None:
             continue
         if key == 'annotations':
             annotations = []

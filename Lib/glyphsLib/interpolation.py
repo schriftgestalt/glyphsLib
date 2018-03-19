@@ -157,10 +157,10 @@ def get_axes(masters, regular_master, instances):
     # the upcoming version of Glyphs is going to store explicit
     # axis desriptions in its file format.
     axes = OrderedDict()
-    for name, tag, userLocParam, defaultUserLoc in (
-            ('weight', 'wght', 'weightClass', 400),
-            ('width', 'wdth', 'widthClass', 100),
-            ('custom', 'XXXX', None, 0)):
+    for name, tag, userLocParam, defaultUserLoc, nameToClassMapping in (
+            ('weight', 'wght', 'weightClass', 400, WEIGHT_CODES),
+            ('width', 'wdth', 'widthClass', 100, WIDTH_CODES),
+            ('custom', 'XXXX', None, 0, {})):
         key = GLYPHS_PREFIX + name + 'Value'
         interpolLocKey = 'interpolation' + name.title()
         if any(key in master.lib for master in masters):
@@ -172,6 +172,13 @@ def get_axes(masters, regular_master, instances):
                 interpolLoc = getattr(instance, interpolLocKey,
                                       DEFAULT_LOCS[name])
                 userLoc = interpolLoc
+                
+                if userLocParam:
+                    parameClassName = getattr(instance, userLocParam, None)
+                    print("__parameClassName", parameClassName)
+                    if parameClassName and parameClassName in nameToClassMapping:
+                        userLoc = nameToClassMapping[parameClassName]
+
                 for param in instance.customParameters:
                     if param.name == userLocParam:
                         userLoc = float(getattr(param, 'value',

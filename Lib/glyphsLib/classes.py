@@ -23,6 +23,7 @@ import inspect
 import traceback
 import uuid
 import logging
+import copy
 import glyphsLib
 from glyphsLib.types import (
     transform, point, intlist, rect, size, glyphs_datetime, color, floatToString,
@@ -314,7 +315,7 @@ class Proxy(object):
         return list(self)
 
     def __deepcopy__(self, memo):
-        return [x.copy() for x in self.values()]
+        return [copy.deepcopy(x) for x in self.values()]
 
     def setter(self, values):
         method = self.setterMethod()
@@ -1449,6 +1450,14 @@ class GSNode(GSBase):
         """Reverse function of _encode_string_as_dict"""
         return self._ESCAPED_CHAR_RE.sub(self._unescape_char, value)
 
+    def __deepcopy__(self, memo):
+        Copy = type(self)()
+        Copy.position = point(self.position[0],self.position[1])
+        if len(self.userData):
+            Copy.userData = copy.deepCopy(self.userData, memo)
+        Copy.type = self.type
+        Copy.smooth = self.smooth
+        return Copy
 
 class GSPath(GSBase):
     _classesForName = {
@@ -1602,6 +1611,11 @@ class GSPath(GSBase):
             node.position.x = x
             node.position.y = y
 
+    def __deepcopy__(self, memo):
+        Copy = type(self)()
+        Copy.nodes = copy.deepcopy(self.nodes, memo)
+        Copy.closed = self.closed
+        return Copy
 
 class segment(list):
 
@@ -1801,7 +1815,7 @@ class GSComponent(GSBase):
 
     @property
     def layer(self):
-        return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
+        return self.parent.parent.parent.glyphs[self.name].layers[self.parent.associatedMasterId]
 
     def applyTransformation(self, x, y):
         x *= self.scale[0]
@@ -1829,7 +1843,28 @@ class GSComponent(GSBase):
     smartComponentValues = property(
         lambda self: self.piece,
         lambda self, value: setattr(self, "piece", value))
-
+    
+    def decompose(self):
+        componentLayer = self.layer
+        assert componentLayer, "could not find component layer for component %s in glyph %s" % (self.name, self.parent)
+        parentLayer = self.parent
+        newPaths = copy.deepcopy(componentLayer.paths)
+        parentLayer.paths.extend(newPaths)
+        
+        newComponents = copy.deepcopy(componentLayer.components)
+        parentLayer.components.extend(newComponents)
+        
+        parentLayer.components.remove(self)
+    
+    def __deepcopy__(self, memo):
+        Copy = type(self)()
+        Copy.alignment = self.alignment
+        Copy.anchor = self.anchor
+        Copy.locked = self.locked
+        Copy.name = self.name
+        Copy.smartComponentValues = copy.deepcopy(self.smartComponentValues, memo)
+        Copy.transform = self.transform,
+        return Copy
 
 class GSSmartComponentAxis(GSBase):
     _classesForName = {
@@ -1884,9 +1919,9 @@ class GSHint(GSBase):
     _classesForName = {
         "horizontal": bool,
         "options": int,  # bitfield
-        "origin": point,  # Index path to node
-        "other1": point,  # Index path to node for third node
-        "other2": point,  # Index path to node for fourth node
+        "origin": intlist,  # Index path to node
+        "other1": intlist,  # Index path to node for third node
+        "other2": intlist,  # Index path to node for fourth node
         "place": point,  # (position, width)
         "scale": point,  # for corners
         "stem": int,  # index of stem
@@ -2202,6 +2237,9 @@ class GSInstance(GSBase):
         self.widthClass = "Medium (normal)"
         self.weightClass = "Regular"
         self._customParameters = []
+    
+    def __repr__(self):
+        return "<%s '%s'>%d,%d,%d" % (self.__class__.__name__, self.name, self.interpolationWeight, self.interpolationWidth, self.interpolationCustom)
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),

@@ -81,16 +81,17 @@ def to_ufo_font_attributes(self, family_name):
         if italic_angle:
             ufo.info.italicAngle = italic_angle
 
-        width = master.width
-        weight = master.weight
-        if weight:
-            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-        if width:
-            ufo.lib[GLYPHS_PREFIX + 'width'] = width
+        #width = master.width
+        #weight = master.weight
+        name = master.name
+        if name:
+            ufo.lib[GLYPHS_PREFIX + 'name'] = name
+        #if width:
+        #    ufo.lib[GLYPHS_PREFIX + 'width'] = width
         for number in ('', '1', '2', '3'):
-            custom_name = getattr(master, 'customName' + number)
-            if custom_name:
-                ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
+            #custom_name = getattr(master, 'customName' + number)
+            #if custom_name:
+            #    ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
             custom_value = getattr(master, 'customValue' + number)
             if custom_value:
                 ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
