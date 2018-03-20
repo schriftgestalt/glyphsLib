@@ -162,7 +162,7 @@ def get_axes(masters, regular_master, instances):
             ('width', 'wdth', 'widthClass', 100, WIDTH_CODES),
             ('custom', 'XXXX', None, 0, {})):
         key = GLYPHS_PREFIX + name + 'Value'
-        interpolLocKey = 'interpolation' + name.title()
+        interpolLocKey = name + "Value"
         if any(key in master.lib for master in masters):
             regularInterpolLoc = regular_master.lib.get(key, DEFAULT_LOCS[name])
             regularUserLoc = defaultUserLoc
@@ -175,7 +175,6 @@ def get_axes(masters, regular_master, instances):
                 
                 if userLocParam:
                     parameClassName = getattr(instance, userLocParam, None)
-                    print("__parameClassName", parameClassName)
                     if parameClassName and parameClassName in nameToClassMapping:
                         userLoc = nameToClassMapping[parameClassName]
 
@@ -320,7 +319,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         location = OrderedDict()
         for axis in axes:
             location[axis] = getattr(
-                instance, 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+                instance, axis + "Value", DEFAULT_LOCS[axis])
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=familyName,
             style_name=styleName,

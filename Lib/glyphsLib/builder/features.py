@@ -33,10 +33,12 @@ def to_ufo_features(self, ufo):
     prefix_str = '\n\n'.join('# Prefix: %s\n%s%s' %
                              (prefix.name, autostr(prefix.automatic),
                               prefix.code.strip())
-                             for prefix in self.font.featurePrefixes)
+                             for prefix in self.font.featurePrefixes if not prefix.disabled)
 
     class_defs = []
     for class_ in self.font.classes:
+        if class_.disabled:
+            continue
         prefix = '@' if not class_.name.startswith('@') else ''
         name = prefix + class_.name
         class_defs.append('%s%s = [ %s ];' % (autostr(class_.automatic), name,
@@ -45,6 +47,8 @@ def to_ufo_features(self, ufo):
 
     feature_defs = []
     for feature in self.font.features:
+        if feature.disabled:
+            continue
         code = feature.code.strip()
         lines = ['feature %s {' % feature.name]
         if feature.notes:

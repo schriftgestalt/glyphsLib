@@ -1761,6 +1761,17 @@ class GSComponent(GSBase):
     def parent(self):
         return self._parent
 
+    # .transform
+    @property
+    def transform(self):
+        return self._transform
+    @transform.setter
+    def transform(self, value):
+        if isinstance(value, transform):
+            self._transform = value
+        else:
+            raise ValueError
+
     # .position
     @property
     def position(self):
@@ -1863,7 +1874,7 @@ class GSComponent(GSBase):
         Copy.locked = self.locked
         Copy.name = self.name
         Copy.smartComponentValues = copy.deepcopy(self.smartComponentValues, memo)
-        Copy.transform = self.transform,
+        Copy.transform = self.transform
         return Copy
 
 class GSSmartComponentAxis(GSBase):
@@ -2180,11 +2191,11 @@ class GSInstance(GSBase):
         "customParameters": GSCustomParameter,
         "exports": bool,
         "instanceInterpolations": dict,
-        "interpolationCustom": float,
-        "interpolationCustom1": float,
-        "interpolationCustom2": float,
-        "interpolationWeight": float,
-        "interpolationWidth": float,
+        "customValue": float,
+        "customValue1": float,
+        "customValue2": float,
+        "weightValue": float,
+        "widthValue": float,
         "isBold": bool,
         "isItalic": bool,
         "linkStyle": str,
@@ -2195,19 +2206,19 @@ class GSInstance(GSBase):
     }
     _defaultsForName = {
         "exports": True,
-        "interpolationWeight": 100,
-        "interpolationWidth": 100,
+        "weightValue": 100,
+        "widthValue": 100,
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
     }
     _keyOrder = (
         "exports",
         "customParameters",
-        "interpolationCustom",
-        "interpolationCustom1",
-        "interpolationCustom2",
-        "interpolationWeight",
-        "interpolationWidth",
+        "customValue",
+        "customValue1",
+        "customValue2",
+        "weightValue",
+        "widthValue",
         "instanceInterpolations",
         "isBold",
         "isItalic",
@@ -2217,20 +2228,25 @@ class GSInstance(GSBase):
         "weightClass",
         "widthClass",
     )
+    _wrapperKeysTranslate = {
+        "interpolationWeight" : "weightValue",
+        "interpolationWidth" : "widthValue",
+        "interpolationCustom" : "customValue",
+    }
 
     def interpolateFont():
         pass
 
-    def __init__(self):
+    def __init__(self, name="Regular"):
         self.exports = True
-        self.name = "Regular"
+        self.name = name
         self.weight = "Regular"
         self.width = "Regular"
         self.custom = None
         self.linkStyle = ""
-        self.interpolationWeight = 100.0
-        self.interpolationWidth = 100.0
-        self.interpolationCustom = 0.0
+        self._weightValue = 100.0
+        self._widthValue = 100.0
+        self._customValue = 0.0
         self.visible = True
         self.isBold = False
         self.isItalic = False
@@ -2239,23 +2255,39 @@ class GSInstance(GSBase):
         self._customParameters = []
     
     def __repr__(self):
-        return "<%s '%s'>%d,%d,%d" % (self.__class__.__name__, self.name, self.interpolationWeight, self.interpolationWidth, self.interpolationCustom)
+        return "<%s '%s'>%d,%d,%d" % (self.__class__.__name__, self.name, self.weightValue, self.widthValue, self.customValue)
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
-
-    weightValue = property(
-        lambda self: self.interpolationWeight,
-        lambda self, value: setattr(self, "interpolationWeight", value))
-
-    widthValue = property(
-        lambda self: self.interpolationWidth,
-        lambda self, value: setattr(self, "interpolationWidth", value))
-
-    customValue = property(
-        lambda self: self.interpolationCustom,
-        lambda self, value: setattr(self, "interpolationCustom", value))
+    
+    @property
+    def weightValue(self):
+        return self._weightValue
+    @weightValue.setter
+    def weightValue(self, value):
+        if isinstance(value, (int, float)):
+            self._weightValue = value
+        else:
+            self._weightValue = float(value)
+    @property
+    def widthValue(self):
+        return self._widthValue
+    @widthValue.setter
+    def widthValue(self, value):
+        if isinstance(value, (int, float)):
+            self._widthValue = value
+        else:
+            self._widthValue = float(value)
+    @property
+    def customValue(self):
+        return self._customValue
+    @customValue.setter
+    def customValue(self, value):
+        if isinstance(value, (int, float)):
+            self._customValue = value
+        else:
+            self._customValue = float(value)
 
     @property
     def familyName(self):

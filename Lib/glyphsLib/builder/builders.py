@@ -129,7 +129,6 @@ class UFOBuilder(_LoggerMixin):
         
         for glyph in self.font.glyphs:
             if not glyph.export:
-                # print("__dont export glyph", glyph)
                 notExportedGlyphs.add(glyph.name)
         for glyph in self.font.glyphs:
             if not glyph.export:
@@ -146,12 +145,10 @@ class UFOBuilder(_LoggerMixin):
                 
                 for component in list(layer.components):
                     if component.componentName in notExportedGlyphs:
-                        # print("__decomposing", component)
                         
                         # import cProfile, pstats, io
                         # pr = cProfile.Profile()
                         # pr.enable()
-                        print("__component", component)
                         component.decompose()
                         
                         # pr.disable()

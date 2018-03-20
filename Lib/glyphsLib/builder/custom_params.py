@@ -35,6 +35,22 @@ def to_ufo_custom_params(self, ufo, master):
 
     set_default_params(ufo)
 
+def convertToPlist(value):
+    if isinstance(value, (str, unicode, int, float)):
+        return value
+    if isinstance(value, (list, tuple)) or "NSArray" in value.__class__.__name__: # sorry for the hack. That way it will work in Glyphs without any import that are platform dependent
+        newValue = []
+        for item in value:
+            newValue.append(convertToPlist(item))
+        return newValue
+    if isinstance(value, dict) or "NSDictionary" in value.__class__.__name__:
+        newValue = {}
+        for key, item in value.items():
+            newValue[key] = convertToPlist(item)
+        return newValue
+    if hasattr(value, "plistValue"):
+        return value.plistValue()
+    raise ValueError("Cant convert value to plist:(%s) %s" % (type(value), value))
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
     """Set Glyphs custom parameters in UFO info or lib, where appropriate.
@@ -152,7 +168,11 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
             setattr(ufo.info, name, value)
         else:
             # everything else gets dumped in the lib
-            ufo.lib[GLYPHS_PREFIX + name] = value
+            try:
+                ufo.lib[GLYPHS_PREFIX + name] = convertToPlist(value)
+            except Exception:
+                import traceback
+                print(traceback.format_exc())
 
 
 def set_default_params(ufo):

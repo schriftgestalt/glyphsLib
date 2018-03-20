@@ -14,7 +14,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-
+from .custom_params import convertToPlist
 from .constants import GLYPHS_PREFIX
 
 MASTER_USER_DATA_KEY = GLYPHS_PREFIX + 'fontMaster.userData'
@@ -24,7 +24,7 @@ def to_ufo_family_user_data(self, ufo):
     """Set family-wide user data as Glyphs does."""
     user_data = self.font.userData
     for key in user_data.keys():
-        ufo.lib[key] = user_data[key]
+        ufo.lib[key] = convertToPlist(user_data[key])
 
 
 def to_ufo_master_user_data(self, ufo, master):
@@ -33,7 +33,7 @@ def to_ufo_master_user_data(self, ufo, master):
     if user_data:
         data = {}
         for key in user_data.keys():
-            data[key] = user_data[key]
+            data[key] = convertToPlist(user_data[key])
         ufo.lib[MASTER_USER_DATA_KEY] = data
 
 
