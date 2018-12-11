@@ -608,7 +608,7 @@ class FontGlyphsProxy(Proxy):
 
     def __delitem__(self, key):
         if type(key) is int:
-            del (self._owner._glyph[key])
+            del (self._owner._glyphs[key])
         else:
             raise KeyError  # TODO: add other access methods
 
